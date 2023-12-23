@@ -1,42 +1,42 @@
 from telegram import Update
 from telegram.ext import (
+    Application,
     Updater,
     CommandHandler,
     MessageHandler,
-    Filters,
+    filters,
     CallbackContext,
 )
 from settings import *
-from messages import *
+from telethon.sync import TelegramClient, events
+from telethon.tl.custom import Message
+
+client = TelegramClient("prova", API_ID, API_HASH).start(phone=PHONE_NUMBER)
+application = Application.builder().token(TOKEN).build()
 
 
-def start(update: Update, context: CallbackContext) -> None:
-    update.message.reply_text(
+async def start(update: Update, context: CallbackContext) -> None:
+    await update.message.reply_text(
         "Ciao! Sono il tuo bot. Sono in ascolto su diversi canali."
     )
 
-
-def echo(update: Update, context: CallbackContext) -> None:
-    # Puoi gestire i messaggi ricevuti qui
-    chat_id = update.message.chat_id
-    message_text = update.message.text
-    context.bot.send_message(chat_id=chat_id, text=f"Hai detto: {message_text}")
-
-
 def main() -> None:
-    updater = Updater(token=TOKEN, use_context=True)
+    application.add_handler(CommandHandler("start", start))
+    application.run_polling()
 
-    dp = updater.dispatcher
 
-    dp.add_handler(CommandHandler("start", start))
-    dp.add_handler(MessageHandler(Filters.text & ~Filters.command, echo))
+@client.on(events.NewMessage(chats=CHANNELS))
+async def handle_new_message(event: Message):
+    print(event.message.text)
+    # for user in USERS:
+    #   await updater.bot.send_message(chat_id=user, text=event.message.text)
 
-    for channel in CHANNELS:
-        dp.add_handler(MessageHandler(Filters.chat(chat_id=channel), echo))
-
-    updater.start_polling()
-    updater.idle()
+    # context.bot.forward_message(
+    #    chat_id=user_id,
+    #    from_chat_id=update.message.chat_id,
+    #    message_id=update.message.message_id,
+    # )
 
 
 if __name__ == "__main__":
-    main()
+    client.run_until_disconnected()

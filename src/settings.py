@@ -10,3 +10,4 @@ PHONE_NUMBER = config_map["phone_number"]
 
 CHANNELS = config_map["channels"].split(",")
 KEYWORDS = config_map["keywords"].split(",")
+USERS = config_map["destination_users"].split(",")

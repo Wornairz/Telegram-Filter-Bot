@@ -1,10 +1,7 @@
 from telegram import Update
 from telegram.ext import (
     Application,
-    Updater,
     CommandHandler,
-    MessageHandler,
-    filters,
     CallbackContext,
 )
 from settings import *
@@ -39,4 +36,5 @@ async def handle_new_message(event: Message):
 
 
 if __name__ == "__main__":
+    main()
     client.run_until_disconnected()

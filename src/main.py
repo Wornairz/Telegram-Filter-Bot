@@ -13,6 +13,7 @@ application = Application.builder().token(TOKEN).build()
 
 
 async def start(update: Update, context: CallbackContext) -> None:
+    print(update.effective_chat.id)
     await update.message.reply_text(
         "Ciao! Sono il tuo bot. Sono in ascolto su diversi canali."
     )
@@ -24,15 +25,11 @@ def main() -> None:
 
 @client.on(events.NewMessage(chats=CHANNELS))
 async def handle_new_message(event: Message):
-    print(event.message.text)
-    # for user in USERS:
-    #   await updater.bot.send_message(chat_id=user, text=event.message.text)
-
-    # context.bot.forward_message(
-    #    chat_id=user_id,
-    #    from_chat_id=update.message.chat_id,
-    #    message_id=update.message.message_id,
-    # )
+    for user in USERS:
+        print(user)
+        print(event.chat_id)
+        print(event.message.id)
+        await application.bot.forward_message(chat_id=user, from_chat_id=event.chat_id, message_id=event.message.id)
 
 
 if __name__ == "__main__":

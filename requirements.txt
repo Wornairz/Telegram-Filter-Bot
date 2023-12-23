@@ -1,0 +1,5 @@
+python-telegram-bot
+pytest
+pytest-mock
+pytest-cov
+pylint

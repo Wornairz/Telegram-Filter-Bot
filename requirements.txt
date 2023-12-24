@@ -3,3 +3,5 @@ pytest
 pytest-mock
 pytest-cov
 pylint
+telethon
+pyyaml

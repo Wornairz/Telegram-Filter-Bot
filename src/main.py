@@ -30,7 +30,7 @@ async def handle_new_message(event: Message):
     channel_username = event.chat.username
     message_id = event.message.id
     for keyword in KEYWORDS:
-        if keyword in event.text:
+        if keyword.lower() in event.text.lower():
             for user in USERS:
                 message_title = f"Trovata corrispondenza con la keyword <b>{keyword}</b> nel canale <i>{event.chat.title}</i>"
                 message_link = f"https://t.me/{channel_username}/{message_id}"

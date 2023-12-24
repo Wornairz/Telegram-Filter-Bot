@@ -1,6 +1,6 @@
 import yaml
 
-with open("config/settings.yaml") as yaml_config:
+with open("config/settings.yaml", encoding="utf-8") as yaml_config:
     config_map = yaml.safe_load(yaml_config)
 
 TOKEN = config_map["token"]

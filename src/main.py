@@ -4,7 +4,7 @@ from telegram.ext import (
     CommandHandler,
     CallbackContext,
 )
-from settings import *
+from settings import TOKEN, API_ID, API_HASH, PHONE_NUMBER, CHANNELS, USERS, KEYWORDS
 from telethon.sync import TelegramClient, events
 from telethon.tl.custom import Message
 

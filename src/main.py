@@ -8,7 +8,7 @@ from settings import *
 from telethon.sync import TelegramClient, events
 from telethon.tl.custom import Message
 
-client = TelegramClient("prova", API_ID, API_HASH).start(phone=PHONE_NUMBER)
+client = TelegramClient("bot", API_ID, API_HASH).start(phone=PHONE_NUMBER)
 application = Application.builder().token(TOKEN).build()
 
 
@@ -25,11 +25,12 @@ def main() -> None:
 
 @client.on(events.NewMessage(chats=CHANNELS))
 async def handle_new_message(event: Message):
+    #from_chat_id=event.chat_id
+    channel_username = event.chat.username
+    message_id=event.message.id
     for user in USERS:
-        print(user)
-        print(event.chat_id)
-        print(event.message.id)
-        await application.bot.forward_message(chat_id=user, from_chat_id=event.chat_id, message_id=event.message.id)
+        message_link = f"https://t.me/{channel_username}/{message_id}"
+        await application.bot.send_message(chat_id=user, text=message_link)
 
 
 if __name__ == "__main__":

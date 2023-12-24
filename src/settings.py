@@ -8,6 +8,6 @@ API_ID = config_map["api_id"]
 API_HASH = config_map["api_hash"]
 PHONE_NUMBER = config_map["phone_number"]
 
-CHANNELS = config_map["channels"].split(",")
+CHANNELS = [channel.lstrip('@') for channel in config_map["channels"].split(",")]
 KEYWORDS = config_map["keywords"].split(",")
 USERS = config_map["destination_users"].split(",")

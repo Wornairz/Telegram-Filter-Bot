@@ -84,3 +84,13 @@ async def stop_interact(update: Update, context: CallbackContext) -> int:
         "Ok, basta"
     )
     return ConversationHandler.END
+
+async def get_channel_list(update: Update, context: CallbackContext) -> None:
+    await update.message.reply_text(
+        "canali tracciati: " + str(CHANNELS)
+    )
+
+async def get_keyword_list(update: Update, context: CallbackContext) -> None:
+    await update.message.reply_text(
+        "keyword attuali: " + str(KEYWORDS)
+    )

@@ -10,7 +10,10 @@ application = Application.builder().token(TOKEN).build()
 
 
 def main() -> None:
+
     application.add_handler(CommandHandler("start", start))
+    application.add_handler(CommandHandler("channel_list", get_channel_list))
+    application.add_handler(CommandHandler("keyword_list", get_keyword_list))
     
     add_channel_conv_handler = ConversationHandler(
         entry_points=[CommandHandler("add_channels", add_channels)],

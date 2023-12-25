@@ -10,6 +10,8 @@ from telegram.ext import (
     filters
 )
 
+from settings import *
+
 # Enable logging
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
@@ -34,6 +36,8 @@ async def add_channels(update: Update, context: CallbackContext) -> int:
 
     
 async def add_channels_message(update: Update, context: CallbackContext) -> int:
+    #TODO: validation
+    CHANNELS.append(update.message.text)
     await update.message.reply_text(
         "Canale aggiunto alla lista"
     )
@@ -46,6 +50,8 @@ async def remove_channels(update: Update, context: CallbackContext) -> int:
     return REMOVE_CHANNELS
 
 async def remove_channels_message(update: Update, context: CallbackContext) -> int:
+    #TODO: validation
+    CHANNELS.remove(update.message.text)
     await update.message.reply_text(
         "Canale rimosso"
     )
@@ -59,6 +65,8 @@ async def add_keywords(update: Update, context: CallbackContext) -> int:
 
     
 async def add_keywords_message(update: Update, context: CallbackContext) -> int:
+    #TODO: validation
+    KEYWORDS.append(update.message.text)
     await update.message.reply_text(
         "keyword aggiunta alla lista"
     )
@@ -71,6 +79,8 @@ async def remove_keywords(update: Update, context: CallbackContext) -> int:
     return REMOVE_KEYWORDS
 
 async def remove_keywords_message(update: Update, context: CallbackContext) -> int:
+    #TODO: validation
+    KEYWORDS.remove(update.message.text)
     await update.message.reply_text(
         "keyword rimossa"
     )

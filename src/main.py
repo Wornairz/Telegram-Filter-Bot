@@ -14,35 +14,11 @@ def main() -> None:
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("channel_list", get_channel_list))
     application.add_handler(CommandHandler("keyword_list", get_keyword_list))
-    
-    add_channel_conv_handler = ConversationHandler(
-        entry_points=[CommandHandler("add_channels", add_channels)],
-        states={ADD_CHANNELS: [MessageHandler(filters.TEXT & ~filters.COMMAND, add_channels_message)]},
-        fallbacks=[CommandHandler("stop", stop_interact)],
-    )
 
-    remove_channel_conv_handler = ConversationHandler(
-        entry_points=[CommandHandler("remove_channels", remove_channels)],
-        states={REMOVE_CHANNELS: [MessageHandler(filters.TEXT & ~filters.COMMAND, remove_channels_message)]},
-        fallbacks=[CommandHandler("stop", stop_interact)],
-    )
-
-    add_keywords_conv_handler = ConversationHandler(
-        entry_points=[CommandHandler("add_keywords", add_keywords)],
-        states={ADD_KEYWORDS: [MessageHandler(filters.TEXT & ~filters.COMMAND, add_keywords_message)]},
-        fallbacks=[CommandHandler("stop", stop_interact)],
-    )
-
-    remove_keywords_conv_handler = ConversationHandler(
-        entry_points=[CommandHandler("remove_keywords", remove_keywords)],
-        states={REMOVE_KEYWORDS: [MessageHandler(filters.TEXT & ~filters.COMMAND, remove_keywords_message)]},
-        fallbacks=[CommandHandler("stop", stop_interact)],
-    )
-
-    application.add_handler(add_channel_conv_handler)
-    application.add_handler(remove_channel_conv_handler)
-    application.add_handler(add_keywords_conv_handler)
-    application.add_handler(remove_keywords_conv_handler)
+    application.add_handler(get_add_channel_handler())
+    application.add_handler(get_remove_channel_handler())
+    application.add_handler(get_add_keywords_handler())
+    application.add_handler(get_remove_keywords_handler())
     application.run_polling()
 
 

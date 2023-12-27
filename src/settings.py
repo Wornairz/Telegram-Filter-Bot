@@ -2,15 +2,6 @@ import yaml
 from telegram.ext import Application
 from telethon import TelegramClient
 
-
-def build_client() -> TelegramClient:
-    return TelegramClient("bot", API_ID, API_HASH).start(phone=PHONE_NUMBER)
-
-
-def build_application() -> Application:
-    return Application.builder().token(TOKEN).build()
-
-
 with open("config/settings.yaml", encoding="utf-8") as yaml_config:
     config_map = yaml.safe_load(yaml_config)
 
@@ -22,3 +13,14 @@ PHONE_NUMBER = config_map["phone_number"]
 CHANNELS = []
 KEYWORDS = []
 USERS = config_map["destination_users"].split(",")
+
+client = TelegramClient("bot", API_ID, API_HASH).start(phone=PHONE_NUMBER)
+application = Application.builder().token(TOKEN).build()
+
+
+def get_client() -> TelegramClient:
+    return client
+
+
+def get_application() -> Application:
+    return application

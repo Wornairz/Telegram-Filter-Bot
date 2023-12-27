@@ -1,12 +1,12 @@
 from telegram.constants import ParseMode
 from telegram.ext import Application, CommandHandler
-from settings import CHANNELS, USERS, KEYWORDS
+from settings import CHANNELS, USERS, KEYWORDS, get_application, get_client
 from telethon.sync import TelegramClient, events
 from telethon.tl.custom import Message
 from handlers import *
 
-client = build_client()
-application = build_application()
+client = get_client()
+application = get_application()
 
 
 def main() -> None:

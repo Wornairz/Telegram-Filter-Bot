@@ -1,12 +1,11 @@
 import logging
 
-from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
+from telegram import Update
 from telegram.ext import (
     ConversationHandler,
     CallbackContext,
     CommandHandler,
     MessageHandler,
-    ContextTypes,
     filters
 )
 
@@ -39,7 +38,7 @@ async def add_channels(update: Update, context: CallbackContext) -> int:
 
 async def add_channels_state(update: Update, context: CallbackContext) -> int:
     input_channel_username = update.message.text.lstrip("@").split('/')[-1]
-        
+
     if input_channel_username in CHANNELS:
         reply_message = "Il canale " + input_channel_username + " è già tracciato"
         await update.message.reply_text(reply_message)

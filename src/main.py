@@ -1,9 +1,11 @@
 from telegram.constants import ParseMode
-from telegram.ext import Application, CommandHandler
-from settings import CHANNELS, USERS, KEYWORDS, get_application, get_client
-from telethon.sync import TelegramClient, events
+from telegram.ext import CommandHandler
+from telethon.sync import events
 from telethon.tl.custom import Message
-from handlers import *
+
+from handlers import start, get_channel_list, get_keyword_list, get_add_channel_handler, get_add_keywords_handler, \
+    get_remove_keywords_handler, get_remove_channel_handler
+from settings import CHANNELS, USERS, KEYWORDS, get_application, get_client
 
 client = get_client()
 application = get_application()

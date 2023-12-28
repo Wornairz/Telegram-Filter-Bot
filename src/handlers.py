@@ -10,7 +10,7 @@ from telegram.ext import (
     filters
 )
 
-from settings import *
+from settings import get_client, CHANNELS, KEYWORDS
 
 # Enable logging
 logging.basicConfig(
@@ -38,11 +38,21 @@ async def add_channels(update: Update, context: CallbackContext) -> int:
 
 
 async def add_channels_state(update: Update, context: CallbackContext) -> int:
-    # TODO: validation
-    CHANNELS.append(update.message.text)
-    await update.message.reply_text(
-        "Canale aggiunto alla lista"
-    )
+    input_channel_username = update.message.text.lstrip("@")
+
+    client = get_client()
+    dialogs = await client.get_dialogs()
+
+    subscribed_channels_username = [dialog.entity.username for dialog in dialogs if dialog.is_channel and not dialog.is_group]
+
+    if input_channel_username in subscribed_channels_username:
+        CHANNELS.append(input_channel_username)
+        reply_message = "Canale @" + input_channel_username + " aggiunto alla lista"
+    else:
+        reply_message = "Non sei iscritto al canale " + input_channel_username
+
+    await update.message.reply_text(reply_message)
+
     return ADD_CHANNELS
 
 

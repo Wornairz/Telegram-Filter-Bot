@@ -23,20 +23,20 @@ logger = logging.getLogger(__name__)
 ADD_CHANNELS, REMOVE_CHANNELS, ADD_KEYWORDS, REMOVE_KEYWORDS = range(4)
 
 
-async def start(update: Update, context: CallbackContext) -> None:
+async def start(update: Update, _: CallbackContext) -> None:
     await update.message.reply_text(
         "Ciao! Sono il tuo bot. Sono in ascolto su diversi canali."
     )
 
 
-async def add_channels(update: Update, context: CallbackContext) -> int:
+async def add_channels(update: Update, _: CallbackContext) -> int:
     await update.message.reply_text(
         "Inserisci i canali che vorresti tracciare. Quando hai finito usa /stop."
     )
     return ADD_CHANNELS
 
 
-async def add_channels_state(update: Update, context: CallbackContext) -> int:
+async def add_channels_state(update: Update, _: CallbackContext) -> int:
     input_channel_username = update.message.text.lstrip("@").split('/')[-1]
 
     if input_channel_username in CHANNELS:
@@ -60,14 +60,14 @@ async def add_channels_state(update: Update, context: CallbackContext) -> int:
     return ADD_CHANNELS
 
 
-async def remove_channels(update: Update, context: CallbackContext) -> int:
+async def remove_channels(update: Update, _: CallbackContext) -> int:
     await update.message.reply_text(
         "Rimuovi i canali che non vuoi più tracciare. Quando hai finito usa /stop."
     )
     return REMOVE_CHANNELS
 
 
-async def remove_channels_state(update: Update, context: CallbackContext) -> int:
+async def remove_channels_state(update: Update, _: CallbackContext) -> int:
     #TODO: inserire lista bottoni (magari con paginazione)
     input_channel_username = update.message.text.lstrip("@")
     if input_channel_username in CHANNELS:
@@ -80,14 +80,14 @@ async def remove_channels_state(update: Update, context: CallbackContext) -> int
     return REMOVE_CHANNELS
 
 
-async def add_keywords(update: Update, context: CallbackContext) -> int:
+async def add_keywords(update: Update, _: CallbackContext) -> int:
     await update.message.reply_text(
         "Inserisci le keywords che vorresti tracciare. Quando hai finito usa /stop."
     )
     return ADD_KEYWORDS
 
 
-async def add_keywords_state(update: Update, context: CallbackContext) -> int:
+async def add_keywords_state(update: Update, _: CallbackContext) -> int:
     input_keyword = update.message.text
     if input_keyword not in KEYWORDS:
         KEYWORDS.append(input_keyword)
@@ -99,14 +99,14 @@ async def add_keywords_state(update: Update, context: CallbackContext) -> int:
     return ADD_KEYWORDS
 
 
-async def remove_keywords(update: Update, context: CallbackContext) -> int:
+async def remove_keywords(update: Update, _: CallbackContext) -> int:
     await update.message.reply_text(
         "Rimuovi le keywords che non vuoi più tracciare. Quando hai finito usa /stop."
     )
     return REMOVE_KEYWORDS
 
 
-async def remove_keywords_state(update: Update, context: CallbackContext) -> int:
+async def remove_keywords_state(update: Update, _: CallbackContext) -> int:
     # TODO: inserire lista bottoni (magari con paginazione)
     input_keyword = update.message.text
     if input_keyword in KEYWORDS:
@@ -119,7 +119,7 @@ async def remove_keywords_state(update: Update, context: CallbackContext) -> int
     return REMOVE_KEYWORDS
 
 
-async def stop_interact(update: Update, context: CallbackContext) -> int:
+async def stop_interact(update: Update, _: CallbackContext) -> int:
     """Cancels and ends the conversation."""
     user = update.message.from_user
     logger.info("User %s canceled the conversation.", user.first_name)
@@ -129,13 +129,13 @@ async def stop_interact(update: Update, context: CallbackContext) -> int:
     return ConversationHandler.END
 
 
-async def get_channel_list(update: Update, context: CallbackContext) -> None:
+async def get_channel_list(update: Update, _: CallbackContext) -> None:
     await update.message.reply_text(
         "canali tracciati: " + str(CHANNELS)
     )
 
 
-async def get_keyword_list(update: Update, context: CallbackContext) -> None:
+async def get_keyword_list(update: Update, _: CallbackContext) -> None:
     await update.message.reply_text(
         "keyword attuali: " + str(KEYWORDS)
     )

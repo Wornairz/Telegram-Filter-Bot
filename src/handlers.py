@@ -40,6 +40,11 @@ async def add_channels(update: Update, context: CallbackContext) -> int:
 async def add_channels_state(update: Update, context: CallbackContext) -> int:
     input_channel_username = update.message.text.lstrip("@")
 
+    if input_channel_username in CHANNELS:
+        reply_message = "Il canale " + input_channel_username + " è già tracciato"
+        await update.message.reply_text(reply_message)
+        return ADD_CHANNELS
+
     client = get_client()
     dialogs = await client.get_dialogs()
 
@@ -64,11 +69,15 @@ async def remove_channels(update: Update, context: CallbackContext) -> int:
 
 
 async def remove_channels_state(update: Update, context: CallbackContext) -> int:
-    # TODO: validation
-    CHANNELS.remove(update.message.text)
-    await update.message.reply_text(
-        "Canale rimosso"
-    )
+    #TODO: inserire lista bottoni (magari con paginazione)
+    input_channel_username = update.message.text.lstrip("@")
+    if input_channel_username in CHANNELS:
+        CHANNELS.remove(input_channel_username)
+        reply_message = "Canale @" + input_channel_username + " rimosso dalla lista"
+    else:
+        reply_message = "Il canale " + input_channel_username + " non è presente nella lista"
+
+    await update.message.reply_text(reply_message)
     return REMOVE_CHANNELS
 
 
@@ -80,11 +89,14 @@ async def add_keywords(update: Update, context: CallbackContext) -> int:
 
 
 async def add_keywords_state(update: Update, context: CallbackContext) -> int:
-    # TODO: validation
-    KEYWORDS.append(update.message.text)
-    await update.message.reply_text(
-        "keyword aggiunta alla lista"
-    )
+    input_keyword = update.message.text
+    if input_keyword not in KEYWORDS:
+        KEYWORDS.append(input_keyword)
+        reply_message = "Keyword " + input_keyword + " aggiunta alla lista"
+    else:
+        reply_message = "La Keyword " + input_keyword + " è già presente, riprova"
+
+    await update.message.reply_text(reply_message)
     return ADD_KEYWORDS
 
 
@@ -96,11 +108,15 @@ async def remove_keywords(update: Update, context: CallbackContext) -> int:
 
 
 async def remove_keywords_state(update: Update, context: CallbackContext) -> int:
-    # TODO: validation
-    KEYWORDS.remove(update.message.text)
-    await update.message.reply_text(
-        "keyword rimossa"
-    )
+    # TODO: inserire lista bottoni (magari con paginazione)
+    input_keyword = update.message.text
+    if input_keyword in KEYWORDS:
+        KEYWORDS.remove(input_keyword)
+        reply_message = "Keyword " + input_keyword + " rimosso dalla lista"
+    else:
+        reply_message = "La Keyword " + input_keyword + " non è presente nella lista"
+
+    await update.message.reply_text(reply_message)
     return REMOVE_KEYWORDS
 
 

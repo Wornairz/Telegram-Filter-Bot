@@ -9,7 +9,7 @@ from telegram.ext import (
     filters
 )
 
-from settings import get_client, CHANNELS, KEYWORDS
+from settings import get_telegram_client, get_db_collection, CHANNELS, KEYWORDS
 
 # Enable logging
 logging.basicConfig(
@@ -44,13 +44,15 @@ async def add_channels_state(update: Update, _: CallbackContext) -> int:
         await update.message.reply_text(reply_message)
         return ADD_CHANNELS
 
-    client = get_client()
+    client = get_telegram_client()
     dialogs = await client.get_dialogs()
 
     subscribed_channels_username = [dialog.entity.username for dialog in dialogs if dialog.is_channel and not dialog.is_group]
 
     if input_channel_username in subscribed_channels_username:
-        CHANNELS.append(input_channel_username)
+        find_query = {"user": update.message.chat_id}
+        update_query = {"$addToSet": {"channels": input_channel_username}}
+        get_db_collection().update_one(find_query, update_query, upsert=True)
         reply_message = "Canale @" + input_channel_username + " aggiunto alla lista"
     else:
         reply_message = "Non sei iscritto al canale " + input_channel_username
@@ -70,8 +72,12 @@ async def remove_channels(update: Update, _: CallbackContext) -> int:
 async def remove_channels_state(update: Update, _: CallbackContext) -> int:
     #TODO: inserire lista bottoni (magari con paginazione)
     input_channel_username = update.message.text.lstrip("@")
-    if input_channel_username in CHANNELS:
-        CHANNELS.remove(input_channel_username)
+    
+    find_query = {"user": update.message.chat_id}
+    user_channels = get_db_collection().find_one(find_query).get("channels")
+    if input_channel_username in user_channels:
+        update_query = {"$pull": {"channels": input_channel_username}}
+        get_db_collection().update_one(find_query, update_query)
         reply_message = "Canale @" + input_channel_username + " rimosso dalla lista"
     else:
         reply_message = "Il canale " + input_channel_username + " non è presente nella lista"

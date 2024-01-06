@@ -5,10 +5,10 @@ from telethon.tl.custom import Message
 
 from handlers import start, get_channel_list, get_keyword_list, get_add_channel_handler, get_add_keywords_handler, \
     get_remove_keywords_handler, get_remove_channel_handler
-from settings import CHANNELS, USERS, KEYWORDS, get_application, get_client
+from settings import CHANNELS, USERS, KEYWORDS, get_telegram_application, get_telegram_client
 
-client = get_client()
-application = get_application()
+client = get_telegram_client()
+application = get_telegram_application()
 
 
 def main() -> None:

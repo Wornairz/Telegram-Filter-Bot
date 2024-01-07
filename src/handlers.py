@@ -9,7 +9,7 @@ from telegram.ext import (
     filters
 )
 
-from settings import get_telegram_client, get_db_collection, CHANNELS, KEYWORDS
+from settings import get_telegram_client, get_db_collection
 
 # Enable logging
 logging.basicConfig(
@@ -39,7 +39,9 @@ async def add_channels(update: Update, _: CallbackContext) -> int:
 async def add_channels_state(update: Update, _: CallbackContext) -> int:
     input_channel_username = update.message.text.lstrip("@").split('/')[-1]
 
-    if input_channel_username in CHANNELS:
+    user_id = update.message.chat_id
+
+    if input_channel_username in await get_user_channels(user_id):
         reply_message = "Il canale " + input_channel_username + " è già tracciato"
         await update.message.reply_text(reply_message)
         return ADD_CHANNELS
@@ -51,7 +53,7 @@ async def add_channels_state(update: Update, _: CallbackContext) -> int:
                                     dialog.is_channel and not dialog.is_group]
 
     if input_channel_username in subscribed_channels_username:
-        find_query = {"user": update.message.chat_id}
+        find_query = {"user": user_id}
         update_query = {"$addToSet": {"channels": input_channel_username}}
         get_db_collection().update_one(find_query, update_query, upsert=True)
         reply_message = "Canale @" + input_channel_username + " aggiunto alla lista"
@@ -96,8 +98,9 @@ async def add_keywords(update: Update, _: CallbackContext) -> int:
 
 async def add_keywords_state(update: Update, _: CallbackContext) -> int:
     input_keyword = update.message.text
-    find_query = {"user": update.message.chat_id}
-    if input_keyword not in KEYWORDS:
+    user_id = update.message.chat_id
+    find_query = {"user": user_id}
+    if input_keyword not in await get_user_keywords(user_id):
         update_query = {"$addToSet": {"keywords": input_keyword}}
         get_db_collection().update_one(find_query, update_query, upsert=True)
         reply_message = "Keyword " + input_keyword + " aggiunta alla lista"

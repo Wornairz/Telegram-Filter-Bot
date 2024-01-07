@@ -95,8 +95,10 @@ async def add_keywords(update: Update, _: CallbackContext) -> int:
 
 async def add_keywords_state(update: Update, _: CallbackContext) -> int:
     input_keyword = update.message.text
+    find_query = {"user": update.message.chat_id}
     if input_keyword not in KEYWORDS:
-        KEYWORDS.append(input_keyword)
+        update_query = {"$addToSet": {"keywords": input_keyword}}
+        get_db_collection().update_one(find_query, update_query, upsert=True)
         reply_message = "Keyword " + input_keyword + " aggiunta alla lista"
     else:
         reply_message = "La Keyword " + input_keyword + " è già presente, riprova"
@@ -115,8 +117,12 @@ async def remove_keywords(update: Update, _: CallbackContext) -> int:
 async def remove_keywords_state(update: Update, _: CallbackContext) -> int:
     # TODO: inserire lista bottoni (magari con paginazione)
     input_keyword = update.message.text
-    if input_keyword in KEYWORDS:
-        KEYWORDS.remove(input_keyword)
+
+    find_query = {"user": update.message.chat_id}
+    user_keywords = get_db_collection().find_one(find_query).get("keywords")
+    if input_keyword in user_keywords:
+        update_query = {"$pull": {"keywords": input_channel_username}}
+        get_db_collection().update_one(find_query, update_query)
         reply_message = "Keyword " + input_keyword + " rimosso dalla lista"
     else:
         reply_message = "La Keyword " + input_keyword + " non è presente nella lista"
@@ -136,14 +142,20 @@ async def stop_interact(update: Update, _: CallbackContext) -> int:
 
 
 async def get_channel_list(update: Update, _: CallbackContext) -> None:
+    #TODO: create separated function
+    find_query = {"user": update.message.chat_id}
+    user_channels = get_db_collection().find_one(find_query).get("channels")
     await update.message.reply_text(
-        "canali tracciati: " + str(CHANNELS)
+        "canali tracciati: " + str(user_channels)
     )
 
 
 async def get_keyword_list(update: Update, _: CallbackContext) -> None:
+    #TODO: create separated function
+    find_query = {"user": update.message.chat_id}
+    user_keywords = get_db_collection().find_one(find_query).get("keywords")
     await update.message.reply_text(
-        "keyword attuali: " + str(KEYWORDS)
+        "keyword attuali: " + str(user_keywords)
     )
 
 

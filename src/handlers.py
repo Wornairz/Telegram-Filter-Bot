@@ -47,7 +47,8 @@ async def add_channels_state(update: Update, _: CallbackContext) -> int:
     client = get_telegram_client()
     dialogs = await client.get_dialogs()
 
-    subscribed_channels_username = [dialog.entity.username for dialog in dialogs if dialog.is_channel and not dialog.is_group]
+    subscribed_channels_username = [dialog.entity.username for dialog in dialogs if
+                                    dialog.is_channel and not dialog.is_group]
 
     if input_channel_username in subscribed_channels_username:
         find_query = {"user": update.message.chat_id}
@@ -70,9 +71,9 @@ async def remove_channels(update: Update, _: CallbackContext) -> int:
 
 
 async def remove_channels_state(update: Update, _: CallbackContext) -> int:
-    #TODO: inserire lista bottoni (magari con paginazione)
+    # TODO: inserire lista bottoni (magari con paginazione)
     input_channel_username = update.message.text.lstrip("@")
-    
+
     find_query = {"user": update.message.chat_id}
     user_channels = get_db_collection().find_one(find_query).get("channels")
     if input_channel_username in user_channels:
@@ -121,7 +122,7 @@ async def remove_keywords_state(update: Update, _: CallbackContext) -> int:
     find_query = {"user": update.message.chat_id}
     user_keywords = get_db_collection().find_one(find_query).get("keywords")
     if input_keyword in user_keywords:
-        update_query = {"$pull": {"keywords": input_channel_username}}
+        update_query = {"$pull": {"keywords": input_keyword}}
         get_db_collection().update_one(find_query, update_query)
         reply_message = "Keyword " + input_keyword + " rimosso dalla lista"
     else:
@@ -142,21 +143,27 @@ async def stop_interact(update: Update, _: CallbackContext) -> int:
 
 
 async def get_channel_list(update: Update, _: CallbackContext) -> None:
-    #TODO: create separated function
-    find_query = {"user": update.message.chat_id}
-    user_channels = get_db_collection().find_one(find_query).get("channels")
+    user_channels = await get_user_channels(update.message.chat_id)
     await update.message.reply_text(
         "canali tracciati: " + str(user_channels)
     )
 
 
+async def get_user_channels(user):
+    find_query = {"user": user}
+    return get_db_collection().find_one(find_query).get("channels")
+
+
 async def get_keyword_list(update: Update, _: CallbackContext) -> None:
-    #TODO: create separated function
-    find_query = {"user": update.message.chat_id}
-    user_keywords = get_db_collection().find_one(find_query).get("keywords")
+    user_keywords = await get_user_keywords(update.message.chat_id)
     await update.message.reply_text(
         "keyword attuali: " + str(user_keywords)
     )
+
+
+async def get_user_keywords(user):
+    find_query = {"user": user}
+    return get_db_collection().find_one(find_query).get("keywords")
 
 
 def get_add_channel_handler() -> ConversationHandler:

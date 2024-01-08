@@ -8,8 +8,8 @@ from telegram.ext import (
     filters
 )
 
-from settings import get_telegram_client, get_db_collection, get_logger
-from functions import get_user_channels, get_user_keywords
+from .settings import get_telegram_client, get_db_collection, get_logger
+from .functions import get_user_channels, get_user_keywords
 
 
 ADD_CHANNELS, REMOVE_CHANNELS, ADD_KEYWORDS, REMOVE_KEYWORDS = range(4)

@@ -5,10 +5,11 @@ from telethon.tl.custom import Message
 
 from handlers import start, get_channel_list, get_keyword_list, get_add_channel_handler, get_add_keywords_handler, \
     get_remove_keywords_handler, get_remove_channel_handler
-from settings import CHANNELS, USERS, KEYWORDS, get_application, get_client
+from settings import get_telegram_application, get_telegram_client
+from functions import get_user_channels, get_user_keywords, get_all_users_data
 
-client = get_client()
-application = get_application()
+client = get_telegram_client()
+application = get_telegram_application()
 
 
 def main() -> None:
@@ -28,14 +29,15 @@ def main() -> None:
 async def handle_new_message(event: Message):
     channel_username = event.chat.username if event.chat is not None else event.chat_id
     message_id = event.message.id
-    if channel_username in CHANNELS:
-        for keyword in KEYWORDS:
-            if keyword.lower() in event.text.lower():
-                for user in USERS:
+    for user_data in get_all_users_data():
+        user_id = user_data.get("user")
+        if channel_username in get_user_channels(user_id):
+            for keyword in get_user_keywords(user_id):
+                if keyword.lower() in event.text.lower():
                     message_title = f"Trovata corrispondenza con la keyword <b>{keyword}</b> nel canale <i>{event.chat.title}</i>"
                     message_link = f"https://t.me/{channel_username}/{message_id}"
                     await application.bot.send_message(
-                        chat_id=user,
+                        chat_id=user_id,
                         text=message_title + "\n\n" + message_link,
                         parse_mode=ParseMode.HTML,
                     )

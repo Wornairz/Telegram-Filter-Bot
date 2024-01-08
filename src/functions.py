@@ -1,4 +1,4 @@
-from settings import get_db_collection
+from .settings import get_db_collection
 
 def get_all_users_data():
     return get_db_collection().find()

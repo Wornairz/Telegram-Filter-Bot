@@ -3,10 +3,10 @@ from telegram.ext import CommandHandler
 from telethon.sync import events
 from telethon.tl.custom import Message
 
-from handlers import start, get_channel_list, get_keyword_list, get_add_channel_handler, get_add_keywords_handler, \
+from src.handlers import start, get_channel_list, get_keyword_list, get_add_channel_handler, get_add_keywords_handler, \
     get_remove_keywords_handler, get_remove_channel_handler
-from settings import get_telegram_application, get_telegram_client
-from functions import get_user_channels, get_user_keywords, get_all_users_data
+from src.settings import get_telegram_application, get_telegram_client
+from src.functions import get_user_channels, get_user_keywords, get_all_users_data
 
 client = get_telegram_client()
 application = get_telegram_application()

@@ -1,6 +1,0 @@
-token: "YOUR_BOT_TOKEN"
-api_id: "YOUR_APP_API_ID"
-api_hash: "YOUR_APP_API_HASH" 
-phone_number: "YOUR_TELEGRAM_PHONE_NUMBER"
-db_uri: "mongodb+srv://<username>:<password>@localhost/?retryWrites=true&w=majority"
-db_collection: "filters"

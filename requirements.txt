@@ -6,3 +6,4 @@ pylint
 telethon
 pyyaml
 pymongo
+python-dotenv

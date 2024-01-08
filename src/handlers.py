@@ -1,4 +1,3 @@
-import logging
 
 from telegram import Update
 from telegram.ext import (
@@ -9,16 +8,9 @@ from telegram.ext import (
     filters
 )
 
-from settings import get_telegram_client, get_db_collection
+from settings import get_telegram_client, get_db_collection, get_logger
+from functions import get_user_channels, get_user_keywords
 
-# Enable logging
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
-)
-# set higher logging level for httpx to avoid all GET and POST requests being logged
-logging.getLogger("httpx").setLevel(logging.WARNING)
-
-logger = logging.getLogger(__name__)
 
 ADD_CHANNELS, REMOVE_CHANNELS, ADD_KEYWORDS, REMOVE_KEYWORDS = range(4)
 
@@ -29,6 +21,54 @@ async def start(update: Update, _: CallbackContext) -> None:
     )
 
 
+
+async def get_channel_list(update: Update, _: CallbackContext) -> None:
+    user_channels = get_user_channels(update.message.chat_id)
+    await update.message.reply_text(
+        "canali tracciati: " + str(user_channels)
+    )
+
+
+
+async def get_keyword_list(update: Update, _: CallbackContext) -> None:
+    user_keywords = get_user_keywords(update.message.chat_id)
+    await update.message.reply_text(
+        "keyword attuali: " + str(user_keywords)
+    )
+
+
+def get_add_channel_handler() -> ConversationHandler:
+    return ConversationHandler(
+        entry_points=[CommandHandler("add_channels", add_channels)],
+        states={ADD_CHANNELS: [MessageHandler(filters.TEXT & ~filters.COMMAND, __add_channels_state)]},
+        fallbacks=[CommandHandler("stop", stop_interact)],
+    )
+
+
+def get_remove_channel_handler() -> ConversationHandler:
+    return ConversationHandler(
+        entry_points=[CommandHandler("remove_channels", remove_channels)],
+        states={REMOVE_CHANNELS: [MessageHandler(filters.TEXT & ~filters.COMMAND, __remove_channels_state)]},
+        fallbacks=[CommandHandler("stop", stop_interact)],
+    )
+
+
+def get_add_keywords_handler() -> ConversationHandler:
+    return ConversationHandler(
+        entry_points=[CommandHandler("add_keywords", add_keywords)],
+        states={ADD_KEYWORDS: [MessageHandler(filters.TEXT & ~filters.COMMAND, __add_keywords_state)]},
+        fallbacks=[CommandHandler("stop", stop_interact)],
+    )
+
+
+def get_remove_keywords_handler() -> ConversationHandler:
+    return ConversationHandler(
+        entry_points=[CommandHandler("remove_keywords", remove_keywords)],
+        states={REMOVE_KEYWORDS: [MessageHandler(filters.TEXT & ~filters.COMMAND, __remove_keywords_state)]},
+        fallbacks=[CommandHandler("stop", stop_interact)],
+    )
+
+
 async def add_channels(update: Update, _: CallbackContext) -> int:
     await update.message.reply_text(
         "Inserisci i canali che vorresti tracciare. Quando hai finito usa /stop."
@@ -36,13 +76,13 @@ async def add_channels(update: Update, _: CallbackContext) -> int:
     return ADD_CHANNELS
 
 
-async def add_channels_state(update: Update, _: CallbackContext) -> int:
+async def __add_channels_state(update: Update, _: CallbackContext) -> int:
     input_channel_username = update.message.text.lstrip("@").split('/')[-1]
 
     user_id = update.message.chat_id
 
-    if input_channel_username in await get_user_channels(user_id):
-        reply_message = "Il canale " + input_channel_username + " è già tracciato"
+    if input_channel_username in get_user_channels(user_id):
+        reply_message = "Il canale @" + input_channel_username + " è già tracciato"
         await update.message.reply_text(reply_message)
         return ADD_CHANNELS
 
@@ -72,7 +112,7 @@ async def remove_channels(update: Update, _: CallbackContext) -> int:
     return REMOVE_CHANNELS
 
 
-async def remove_channels_state(update: Update, _: CallbackContext) -> int:
+async def __remove_channels_state(update: Update, _: CallbackContext) -> int:
     # TODO: inserire lista bottoni (magari con paginazione)
     input_channel_username = update.message.text.lstrip("@")
 
@@ -83,7 +123,7 @@ async def remove_channels_state(update: Update, _: CallbackContext) -> int:
         get_db_collection().update_one(find_query, update_query)
         reply_message = "Canale @" + input_channel_username + " rimosso dalla lista"
     else:
-        reply_message = "Il canale " + input_channel_username + " non è presente nella lista"
+        reply_message = "Il canale @" + input_channel_username + " non è presente nella lista"
 
     await update.message.reply_text(reply_message)
     return REMOVE_CHANNELS
@@ -96,11 +136,11 @@ async def add_keywords(update: Update, _: CallbackContext) -> int:
     return ADD_KEYWORDS
 
 
-async def add_keywords_state(update: Update, _: CallbackContext) -> int:
+async def __add_keywords_state(update: Update, _: CallbackContext) -> int:
     input_keyword = update.message.text
     user_id = update.message.chat_id
     find_query = {"user": user_id}
-    if input_keyword not in await get_user_keywords(user_id):
+    if input_keyword not in get_user_keywords(user_id):
         update_query = {"$addToSet": {"keywords": input_keyword}}
         get_db_collection().update_one(find_query, update_query, upsert=True)
         reply_message = "Keyword " + input_keyword + " aggiunta alla lista"
@@ -118,7 +158,7 @@ async def remove_keywords(update: Update, _: CallbackContext) -> int:
     return REMOVE_KEYWORDS
 
 
-async def remove_keywords_state(update: Update, _: CallbackContext) -> int:
+async def __remove_keywords_state(update: Update, _: CallbackContext) -> int:
     # TODO: inserire lista bottoni (magari con paginazione)
     input_keyword = update.message.text
 
@@ -138,64 +178,9 @@ async def remove_keywords_state(update: Update, _: CallbackContext) -> int:
 async def stop_interact(update: Update, _: CallbackContext) -> int:
     """Cancels and ends the conversation."""
     user = update.message.from_user
-    logger.info("User %s canceled the conversation.", user.first_name)
+    get_logger().info("User %s canceled the conversation.", user.first_name)
     await update.message.reply_text(
         "Ok, basta"
     )
     return ConversationHandler.END
 
-
-async def get_channel_list(update: Update, _: CallbackContext) -> None:
-    user_channels = await get_user_channels(update.message.chat_id)
-    await update.message.reply_text(
-        "canali tracciati: " + str(user_channels)
-    )
-
-
-async def get_user_channels(user):
-    find_query = {"user": user}
-    return get_db_collection().find_one(find_query).get("channels")
-
-
-async def get_keyword_list(update: Update, _: CallbackContext) -> None:
-    user_keywords = await get_user_keywords(update.message.chat_id)
-    await update.message.reply_text(
-        "keyword attuali: " + str(user_keywords)
-    )
-
-
-async def get_user_keywords(user):
-    find_query = {"user": user}
-    return get_db_collection().find_one(find_query).get("keywords")
-
-
-def get_add_channel_handler() -> ConversationHandler:
-    return ConversationHandler(
-        entry_points=[CommandHandler("add_channels", add_channels)],
-        states={ADD_CHANNELS: [MessageHandler(filters.TEXT & ~filters.COMMAND, add_channels_state)]},
-        fallbacks=[CommandHandler("stop", stop_interact)],
-    )
-
-
-def get_remove_channel_handler() -> ConversationHandler:
-    return ConversationHandler(
-        entry_points=[CommandHandler("remove_channels", remove_channels)],
-        states={REMOVE_CHANNELS: [MessageHandler(filters.TEXT & ~filters.COMMAND, remove_channels_state)]},
-        fallbacks=[CommandHandler("stop", stop_interact)],
-    )
-
-
-def get_add_keywords_handler() -> ConversationHandler:
-    return ConversationHandler(
-        entry_points=[CommandHandler("add_keywords", add_keywords)],
-        states={ADD_KEYWORDS: [MessageHandler(filters.TEXT & ~filters.COMMAND, add_keywords_state)]},
-        fallbacks=[CommandHandler("stop", stop_interact)],
-    )
-
-
-def get_remove_keywords_handler() -> ConversationHandler:
-    return ConversationHandler(
-        entry_points=[CommandHandler("remove_keywords", remove_keywords)],
-        states={REMOVE_KEYWORDS: [MessageHandler(filters.TEXT & ~filters.COMMAND, remove_keywords_state)]},
-        fallbacks=[CommandHandler("stop", stop_interact)],
-    )

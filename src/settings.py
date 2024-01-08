@@ -1,8 +1,18 @@
 import yaml
+import logging
 from telegram.ext import Application
 from telethon import TelegramClient
 from pymongo.mongo_client import MongoClient
 from pymongo.collection import Collection
+
+# Enable logging
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
+)
+logging.getLogger("httpx").setLevel(logging.WARNING)
+
+def get_logger() -> logging.Logger:
+    return logging.getLogger(__name__)
 
 with open("config/settings.yaml", encoding="utf-8") as yaml_config:
     config_map = yaml.safe_load(yaml_config)
@@ -11,10 +21,6 @@ TOKEN = config_map["token"]
 API_ID = config_map["api_id"]
 API_HASH = config_map["api_hash"]
 PHONE_NUMBER = config_map["phone_number"]
-# TODO: remove those three settings after create database
-CHANNELS = []
-KEYWORDS = []
-USERS = config_map["destination_users"].split(",")
 DB_URI = config_map["db_uri"]
 DB_COLLECTION = config_map["db_collection"]
 
@@ -32,5 +38,3 @@ def get_telegram_application() -> Application:
 
 def get_db_collection() -> Collection:
     return db_collection
-
-

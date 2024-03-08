@@ -1,49 +1,68 @@
-
 from telegram import Update
 from telegram.ext import (
     ConversationHandler,
     CallbackContext,
     CommandHandler,
     MessageHandler,
-    filters
+    filters,
 )
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 from .settings import get_telegram_client, get_db_collection, get_logger
-from .functions import get_user_channels, get_user_keywords, create_user, remove_channel, remove_keyword
+from .functions import (
+    get_user_channels,
+    get_user_keywords,
+    create_user,
+    remove_channel,
+    remove_keyword,
+)
 from .utils import create_keyboard
 
 ADD_CHANNELS, REMOVE_CHANNELS, ADD_KEYWORDS, REMOVE_KEYWORDS = range(4)
 
+
 async def start(update: Update, _: CallbackContext) -> None:
-    user = create_user(update.message.chat_id)
+    create_user(update.message.chat_id)
     await update.message.reply_text(
         "Ciao! Sono il tuo bot. Sono in ascolto su diversi canali."
     )
+
 
 async def button_handler_keyword(update: Update, _: CallbackContext) -> None:
     query = update.callback_query
     keyword_name = query.data.split("?")[1]
     await query.answer()
     keyboard = [
-        [InlineKeyboardButton("SI", callback_data=f"deleteKeyword?{keyword_name}"),
-         InlineKeyboardButton("NO", callback_data="cancel")]
+        [
+            InlineKeyboardButton("SI", callback_data=f"deleteKeyword?{keyword_name}"),
+            InlineKeyboardButton("NO", callback_data="cancel"),
+        ]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    await query.edit_message_text(text=f"Sei sicuro di voler cancellare '{keyword_name}'?", reply_markup=reply_markup)
-    
+    await query.edit_message_text(
+        text=f"Sei sicuro di voler cancellare '{keyword_name}'?",
+        reply_markup=reply_markup,
+    )
+
+
 async def button_handler_channel(update: Update, _: CallbackContext) -> None:
     query = update.callback_query
     channel_name = query.data.split("?")[1]
     await query.answer()
     keyboard = [
-        [InlineKeyboardButton("SI", callback_data=f"deleteChannel?{channel_name}"),
-         InlineKeyboardButton("NO", callback_data="cancel")]
+        [
+            InlineKeyboardButton("SI", callback_data=f"deleteChannel?{channel_name}"),
+            InlineKeyboardButton("NO", callback_data="cancel"),
+        ]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    await query.edit_message_text(text=f"Sei sicuro di voler cancellare '{channel_name}'?", reply_markup=reply_markup)
-    
-async def confirm_delete_keyword(update, context):
+    await query.edit_message_text(
+        text=f"Sei sicuro di voler cancellare '{channel_name}'?",
+        reply_markup=reply_markup,
+    )
+
+
+async def confirm_delete_keyword(update, context) -> None:
     query = update.callback_query
     await query.answer()
     data = query.data
@@ -53,8 +72,9 @@ async def confirm_delete_keyword(update, context):
         await query.edit_message_text(text=f"Keyword '{keyword_name}' cancellata.")
     elif data == "cancel":
         await query.edit_message_text(text="Cancellazione annullata.")
-        
-async def confirm_delete_channel(update, context):
+
+
+async def confirm_delete_channel(update, context) -> None:
     query = update.callback_query
     await query.answer()
     data = query.data
@@ -65,45 +85,64 @@ async def confirm_delete_channel(update, context):
     elif data == "cancel":
         await query.edit_message_text(text="Cancellazione annullata.")
 
+
 async def get_channel_list(update: Update, _: CallbackContext) -> None:
     user_channels = get_user_channels(update.message.chat_id)
     msg = "Canali tracciati:\n"
     for channel in user_channels:
         msg += f"<a href='https://t.me/{channel}'>{channel}</a>\n"
-    await update.message.reply_text(msg, parse_mode="HTML", disable_web_page_preview=True)    
+    await update.message.reply_text(
+        msg, parse_mode="HTML", disable_web_page_preview=True
+    )
+
 
 async def get_keyword_list(update: Update, _: CallbackContext) -> None:
     user_keywords = get_user_keywords(update.message.chat_id)
     msg = "Keywords tracciate:\n•"
     msg += "\n• ".join(user_keywords)
-    await update.message.reply_text(msg)    
+    await update.message.reply_text(msg)
+
 
 def get_add_channel_handler() -> ConversationHandler:
     return ConversationHandler(
-        entry_points=[CommandHandler("add_channels", add_channels)],        
-        states={ADD_CHANNELS: [MessageHandler(filters.TEXT & ~filters.COMMAND, __add_channels_state)]},
+        entry_points=[CommandHandler("add_channels", add_channels)],
+        states={
+            ADD_CHANNELS: [
+                MessageHandler(filters.TEXT & ~filters.COMMAND, __add_channels_state)
+            ]
+        },
         fallbacks=[CommandHandler("stop", stop_interact)],
     )
-    
+
+
 def get_add_keywords_handler() -> ConversationHandler:
     return ConversationHandler(
         entry_points=[CommandHandler("add_keywords", add_keywords)],
-        states={ADD_KEYWORDS: [MessageHandler(filters.TEXT & ~filters.COMMAND, __add_keywords_state)]},
+        states={
+            ADD_KEYWORDS: [
+                MessageHandler(filters.TEXT & ~filters.COMMAND, __add_keywords_state)
+            ]
+        },
         fallbacks=[CommandHandler("stop", stop_interact)],
     )
 
-async def get_remove_channel_handler(update: Update, _: CallbackContext) -> None :
+
+async def get_remove_channel_handler(update: Update, _: CallbackContext) -> None:
     user_channels = get_user_channels(update.message.chat_id)
     keyboard = create_keyboard(user_channels, 2, "channel")
     reply_markup = InlineKeyboardMarkup(keyboard)
-    await update.message.reply_text("Seleziona il canale da rimuovere", reply_markup=reply_markup)
+    await update.message.reply_text(
+        "Seleziona il canale da rimuovere", reply_markup=reply_markup
+    )
 
-async def get_remove_keywords_handler(update: Update, _: CallbackContext) -> None :
+
+async def get_remove_keywords_handler(update: Update, _: CallbackContext) -> None:
     user_keyword = get_user_keywords(update.message.chat_id)
     keyboard = create_keyboard(user_keyword, 2, "keyword")
     reply_markup = InlineKeyboardMarkup(keyboard)
-    await update.message.reply_text("Seleziona la keyword da rimuovere", reply_markup=reply_markup)
-
+    await update.message.reply_text(
+        "Seleziona la keyword da rimuovere", reply_markup=reply_markup
+    )
 
 
 async def add_channels(update: Update, _: CallbackContext) -> int:
@@ -114,7 +153,7 @@ async def add_channels(update: Update, _: CallbackContext) -> int:
 
 
 async def __add_channels_state(update: Update, _: CallbackContext) -> int:
-    input_channel_username = update.message.text.lstrip("@").split('/')[-1]
+    input_channel_username = update.message.text.lstrip("@").split("/")[-1]
     user_id = update.message.chat_id
     if input_channel_username in get_user_channels(user_id):
         reply_message = "Il canale @" + input_channel_username + " è già tracciato"
@@ -124,8 +163,11 @@ async def __add_channels_state(update: Update, _: CallbackContext) -> int:
     client = get_telegram_client()
     dialogs = await client.get_dialogs()
 
-    subscribed_channels_username = [dialog.entity.username for dialog in dialogs if
-                                    dialog.is_channel and not dialog.is_group]
+    subscribed_channels_username = [
+        dialog.entity.username
+        for dialog in dialogs
+        if dialog.is_channel and not dialog.is_group
+    ]
 
     if input_channel_username in subscribed_channels_username:
         find_query = {"user": user_id}
@@ -143,6 +185,7 @@ async def remove_channels(update: Update, _: CallbackContext) -> int:
         "Rimuovi i canali che non vuoi più tracciare. Quando hai finito usa /stop."
     )
     return REMOVE_CHANNELS
+
 
 async def add_keywords(update: Update, _: CallbackContext) -> int:
     await update.message.reply_text(
@@ -172,11 +215,10 @@ async def remove_keywords(update: Update, _: CallbackContext) -> int:
     )
     return REMOVE_KEYWORDS
 
+
 async def stop_interact(update: Update, _: CallbackContext) -> int:
     """Cancels and ends the conversation."""
     user = update.message.from_user
     get_logger().info("User %s canceled the conversation.", user.first_name)
-    await update.message.reply_text(
-        "Ok, basta"
-    )
+    await update.message.reply_text("Ok, basta")
     return ConversationHandler.END

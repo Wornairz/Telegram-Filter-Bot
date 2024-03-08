@@ -16,6 +16,7 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 def get_logger() -> logging.Logger:
     return logging.getLogger(__name__)
 
+
 load_dotenv()
 TOKEN = os.getenv("TOKEN")
 API_ID = os.getenv("API_ID")

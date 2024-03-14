@@ -6,8 +6,7 @@ def get_all_users_data() -> list:
 
 
 def get_user_keywords(user) -> list:
-    find_query = {"user": user}
-    user_document = get_db_collection().find_one(find_query)
+    user_document = get_user(user)
     if user_document is None:
         return []
     return user_document.get("keywords", [])

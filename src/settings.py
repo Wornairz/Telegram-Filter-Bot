@@ -25,19 +25,26 @@ PHONE_NUMBER = os.getenv("PHONE_NUMBER")
 DB_URI = os.getenv("DB_URI")
 DB_COLLECTION = os.getenv("DB_COLLECTION")
 
-telegram_client = TelegramClient("bot", API_ID, API_HASH).start(phone=PHONE_NUMBER)
-telegram_application = Application.builder().token(TOKEN).build()
-
-db_collection = MongoClient(DB_URI).get_database()[DB_COLLECTION]
+telegram_client = None
+telegram_application = None
+db_collection = None
 
 
 def get_telegram_client() -> TelegramClient:
+    if telegram_client is None:
+        telegram_client = TelegramClient("bot", API_ID, API_HASH).start(
+            phone=PHONE_NUMBER
+        )
     return telegram_client
 
 
 def get_telegram_application() -> Application:
+    if telegram_application is None:
+        telegram_application = Application.builder().token(TOKEN).build()
     return telegram_application
 
 
 def get_db_collection() -> Collection:
+    if db_collection is None:
+        db_collection = MongoClient(DB_URI).get_database()[DB_COLLECTION]
     return db_collection

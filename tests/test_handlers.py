@@ -113,7 +113,7 @@ async def test_delete_keyword_confirmation():
     with patch("src.handlers.remove_keyword") as mock_remove_keyword:
         await confirm_delete_keyword(update, context)
         query.edit_message_text.assert_called_once_with(
-            text="Keyword <b>testKeyword</b> cancellata."
+            text="Keyword <b>testKeyword</b> cancellata.", parse_mode='HTML'
         )
 
 
@@ -131,7 +131,7 @@ async def test_delete_channel_confirmation():
     with patch("src.handlers.remove_channel") as mock_remove_channel:
         await confirm_delete_channel(update, context)
         query.edit_message_text.assert_called_once_with(
-            text="Canale @testChannel cancellato."
+            text="Canale @testChannel cancellato.", parse_mode='HTML'
         )
 
 

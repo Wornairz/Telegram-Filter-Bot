@@ -31,6 +31,7 @@ db_collection = None
 
 
 def get_telegram_client() -> TelegramClient:
+    global telegram_client
     if telegram_client is None:
         telegram_client = TelegramClient("bot", API_ID, API_HASH).start(
             phone=PHONE_NUMBER
@@ -39,12 +40,14 @@ def get_telegram_client() -> TelegramClient:
 
 
 def get_telegram_application() -> Application:
+    global telegram_application
     if telegram_application is None:
         telegram_application = Application.builder().token(TOKEN).build()
     return telegram_application
 
 
 def get_db_collection() -> Collection:
+    global db_collection
     if db_collection is None:
         db_collection = MongoClient(DB_URI).get_database()[DB_COLLECTION]
     return db_collection

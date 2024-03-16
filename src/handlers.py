@@ -1,4 +1,5 @@
 from telegram import Update
+from telegram.constants import ParseMode
 from telegram.ext import (
     ConversationHandler,
     CallbackContext,
@@ -40,8 +41,9 @@ async def button_handler_keyword(update: Update, _: CallbackContext) -> None:
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     await query.edit_message_text(
-        text=f"Sei sicuro di voler cancellare '{keyword_name}'?",
+        text=f"Sei sicuro di voler cancellare <b>{keyword_name}</b>?",
         reply_markup=reply_markup,
+        parse_mode="HTML"
     )
 
 
@@ -57,7 +59,7 @@ async def button_handler_channel(update: Update, _: CallbackContext) -> None:
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     await query.edit_message_text(
-        text=f"Sei sicuro di voler cancellare '{channel_name}'?",
+        text=f"Sei sicuro di voler cancellare @{channel_name}?",
         reply_markup=reply_markup,
     )
 
@@ -69,7 +71,7 @@ async def confirm_delete_keyword(update, context) -> None:
     if data.startswith("deleteKeyword?"):
         keyword_name = data.split("?")[1]
         remove_keyword(update.effective_chat.id, keyword_name)
-        await query.edit_message_text(text=f"Keyword '{keyword_name}' cancellata.")
+        await query.edit_message_text(text=f"Keyword <b>{keyword_name}</b> cancellata.", parse_mode="HTML")
     elif data == "cancel":
         await query.edit_message_text(text="Cancellazione annullata.")
 
@@ -81,14 +83,14 @@ async def confirm_delete_channel(update, context) -> None:
     if data.startswith("deleteChannel?"):
         channel_name = data.split("?")[1]
         remove_channel(update.effective_chat.id, channel_name)
-        await query.edit_message_text(text=f"Canale '{channel_name}' cancellato.")
+        await query.edit_message_text(text=f"Canale @{channel_name} cancellato.")
     elif data == "cancel":
         await query.edit_message_text(text="Cancellazione annullata.")
 
 
 async def get_channel_list(update: Update, _: CallbackContext) -> None:
     user_channels = get_user_channels(update.message.chat_id)
-    msg = "Canali tracciati:\n"
+    msg = "Canali tracciati:\n\n"
     for channel in user_channels:
         msg += f"<a href='https://t.me/{channel}'>{channel}</a>\n"
     await update.message.reply_text(
@@ -98,7 +100,7 @@ async def get_channel_list(update: Update, _: CallbackContext) -> None:
 
 async def get_keyword_list(update: Update, _: CallbackContext) -> None:
     user_keywords = get_user_keywords(update.message.chat_id)
-    msg = "Keywords tracciate:\n•"
+    msg = "Keywords tracciate:\n\n• "
     msg += "\n• ".join(user_keywords)
     await update.message.reply_text(msg)
 
@@ -201,11 +203,11 @@ async def __add_keywords_state(update: Update, _: CallbackContext) -> int:
     if input_keyword not in get_user_keywords(user_id):
         update_query = {"$addToSet": {"keywords": input_keyword}}
         get_db_collection().update_one(find_query, update_query, upsert=True)
-        reply_message = "Keyword " + input_keyword + " aggiunta alla lista"
+        reply_message = "Keyword <b>" + input_keyword + "</b> aggiunta alla lista"
     else:
-        reply_message = "La Keyword " + input_keyword + " è già presente, riprova"
+        reply_message = "La Keyword <b>" + input_keyword + "</b> è già presente, riprova"
 
-    await update.message.reply_text(reply_message)
+    await update.message.reply_text(reply_message, parse_mode=ParseMode.HTML)
     return ADD_KEYWORDS
 
 

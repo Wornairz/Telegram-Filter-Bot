@@ -1,6 +1,9 @@
 from src.handlers import (
     add_channels,
     add_keywords,
+    confirm_delete_keyword,
+    get_add_channel_handler,
+    get_add_keywords_handler,
     get_channel_list,
     get_keyword_list,
     get_remove_channel_handler,
@@ -8,12 +11,16 @@ from src.handlers import (
     remove_channels,
     remove_keywords,
     start,
+    stop_interact,
+    __add_channels_state,
+    __add_keywords_state,
 )
 from unittest.mock import AsyncMock, patch, MagicMock
 import pytest
 from src.handlers import button_handler_channel
 from src.handlers import start, button_handler_channel
 from unittest.mock import AsyncMock, patch, MagicMock
+from telegram.ext import CommandHandler
 
 
 @pytest.mark.asyncio
@@ -71,6 +78,38 @@ async def test_confirm_delete_keyword():
     await button_handler_channel(update, context)
     callback_query.answer.assert_awaited_once()
     callback_query.edit_message_text.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_delete_keyword_confirmation():
+    query = MagicMock()
+    query.data = "deleteKeyword?testKeyword"
+    query.answer = AsyncMock()
+    query.edit_message_text = AsyncMock()
+    update = MagicMock()
+    update.callback_query = query
+    update.effective_chat.id = 12345
+    context = MagicMock()
+    context.bot = MagicMock()
+    with patch("src.functions.remove_keyword") as mock_remove_keyword:
+        await confirm_delete_keyword(update, context)
+        query.edit_message_text.assert_called_once_with(
+            text="Keyword 'testKeyword' cancellata."
+        )
+
+
+@pytest.mark.asyncio
+async def test_cancel_deletion():
+    query = MagicMock()
+    query.data = "cancel"
+    query.answer = AsyncMock()
+    query.edit_message_text = AsyncMock()
+    update = MagicMock()
+    update.callback_query = query
+    context = MagicMock()
+    context.bot = MagicMock()
+    await confirm_delete_keyword(update, context)
+    query.edit_message_text.assert_called_once_with(text="Cancellazione annullata.")
 
 
 @pytest.mark.asyncio
@@ -147,6 +186,19 @@ async def test_get_remove_channel_handler():
 
 
 @pytest.mark.asyncio
+async def test_get_add_channel_handler():
+    conversationHandler = get_add_channel_handler()
+    assert conversationHandler.entry_points[0].callback == add_channels
+    assert conversationHandler.states[0][0].callback == __add_channels_state
+
+
+@pytest.mark.asyncio
+async def test_get_add_keywords_handler():
+    conversationHandler = get_add_keywords_handler()
+    assert conversationHandler.entry_points[0].callback == add_keywords
+
+
+@pytest.mark.asyncio
 async def test_get_remove_keywords_handler():
     update = AsyncMock()
     context = MagicMock()
@@ -208,3 +260,11 @@ async def test_remove_keywords():
     update.message.reply_text.assert_called_once_with(
         "Rimuovi le keywords che non vuoi più tracciare. Quando hai finito usa /stop."
     )
+
+
+@pytest.mark.asyncio
+async def test_stop_interact():
+    update = AsyncMock()
+    context = MagicMock()
+    await stop_interact(update, context)
+    update.message.reply_text.assert_called_once_with("Ok, basta")

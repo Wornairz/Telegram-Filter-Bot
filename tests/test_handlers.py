@@ -1,6 +1,7 @@
 from src.handlers import (
     add_channels,
     add_keywords,
+    confirm_delete_channel,
     confirm_delete_keyword,
     get_add_channel_handler,
     get_add_keywords_handler,
@@ -23,6 +24,22 @@ from unittest.mock import AsyncMock, patch, MagicMock
 from telegram.ext import CommandHandler
 
 
+@pytest.fixture
+def mock_db_collection():
+    with patch("src.handlers.get_db_collection") as mock:
+        collection_mock = MagicMock()
+        mock.return_value = collection_mock
+        yield collection_mock
+
+
+@pytest.fixture
+def mock_telegram_client():
+    with patch("src.settings.get_telegram_client") as telegram_mock:
+        telegram_client_mock = MagicMock()
+        telegram_mock.return_value = telegram_client_mock
+        yield telegram_client_mock
+
+
 @pytest.mark.asyncio
 async def test_start():
     update = AsyncMock()
@@ -30,10 +47,12 @@ async def test_start():
     chat_id = 12345
     update.message.chat_id = chat_id
     update.message.reply_text = AsyncMock()
-    await start(update, context)
-    update.message.reply_text.assert_called_once_with(
-        "Ciao! Sono il tuo bot. Sono in ascolto su diversi canali."
-    )
+    with patch("src.handlers.create_user") as mock_create_user:
+        mock_create_user.return_value = None
+        await start(update, context)
+        update.message.reply_text.assert_called_once_with(
+            "Ciao! Sono il tuo bot. Sono in ascolto su diversi canali."
+        )
 
 
 @pytest.mark.asyncio
@@ -91,10 +110,28 @@ async def test_delete_keyword_confirmation():
     update.effective_chat.id = 12345
     context = MagicMock()
     context.bot = MagicMock()
-    with patch("src.functions.remove_keyword") as mock_remove_keyword:
+    with patch("src.handlers.remove_keyword") as mock_remove_keyword:
         await confirm_delete_keyword(update, context)
         query.edit_message_text.assert_called_once_with(
             text="Keyword 'testKeyword' cancellata."
+        )
+
+
+@pytest.mark.asyncio
+async def test_delete_channel_confirmation():
+    query = MagicMock()
+    query.data = "deleteChannel?testChannel"
+    query.answer = AsyncMock()
+    query.edit_message_text = AsyncMock()
+    update = MagicMock()
+    update.callback_query = query
+    update.effective_chat.id = 12345
+    context = MagicMock()
+    context.bot = MagicMock()
+    with patch("src.handlers.remove_channel") as mock_remove_channel:
+        await confirm_delete_channel(update, context)
+        query.edit_message_text.assert_called_once_with(
+            text="Canale 'testChannel' cancellato."
         )
 
 

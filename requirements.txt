@@ -7,3 +7,4 @@ telethon
 pyyaml
 pymongo
 python-dotenv
+pytest-asyncio

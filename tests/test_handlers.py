@@ -69,9 +69,9 @@ async def test_button_handler_channel():
 
 
 @pytest.mark.asyncio
-async def test_button_handler_keyword():
+async def test_button_handler_channel():
     callback_query = AsyncMock()
-    callback_query.data = "command?test_keyword"
+    callback_query.data = "command?test_channel"
     callback_query.answer = AsyncMock()
     update = AsyncMock()
     update.callback_query = callback_query
@@ -81,7 +81,7 @@ async def test_button_handler_keyword():
         await button_handler_channel(update, context)
     callback_query.answer.assert_awaited_once()
     callback_query.edit_message_text.assert_awaited_once_with(
-        text=f"Sei sicuro di voler cancellare 'test_keyword'?",
+        text=f"Sei sicuro di voler cancellare @test_channel?",
         reply_markup=reply_markup,
     )
 
@@ -113,7 +113,7 @@ async def test_delete_keyword_confirmation():
     with patch("src.handlers.remove_keyword") as mock_remove_keyword:
         await confirm_delete_keyword(update, context)
         query.edit_message_text.assert_called_once_with(
-            text="Keyword 'testKeyword' cancellata."
+            text="Keyword <b>testKeyword</b> cancellata."
         )
 
 
@@ -131,7 +131,7 @@ async def test_delete_channel_confirmation():
     with patch("src.handlers.remove_channel") as mock_remove_channel:
         await confirm_delete_channel(update, context)
         query.edit_message_text.assert_called_once_with(
-            text="Canale 'testChannel' cancellato."
+            text="Canale @testChannel cancellato."
         )
 
 
@@ -175,7 +175,7 @@ async def test_get_channel_list(mock_get_user_channels):
         }
         await get_channel_list(update, context)
         update.message.reply_text.assert_called_once_with(
-            "Canali tracciati:\n<a href='https://t.me/channel1'>channel1</a>\n<a href='https://t.me/channel2'>channel2</a>\n",
+            "Canali tracciati:\n\n<a href='https://t.me/channel1'>channel1</a>\n<a href='https://t.me/channel2'>channel2</a>\n",
             parse_mode="HTML",
             disable_web_page_preview=True,
         )
@@ -194,7 +194,7 @@ async def test_get_keyword_list(mock_get_user_keywords):
         }
         await get_keyword_list(update, context)
         update.message.reply_text.assert_called_once_with(
-            "Keywords tracciate:\n•keyword1\n• keyword2"
+            "Keywords tracciate:\n\n• keyword1\n• keyword2"
         )
 
 

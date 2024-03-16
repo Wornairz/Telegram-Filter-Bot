@@ -131,7 +131,7 @@ async def test_delete_channel_confirmation():
     with patch("src.handlers.remove_channel") as mock_remove_channel:
         await confirm_delete_channel(update, context)
         query.edit_message_text.assert_called_once_with(
-            text="Canale @testChannel cancellato.", parse_mode='HTML'
+            text="Canale @testChannel cancellato."
         )
 
 
